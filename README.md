@@ -1,1 +1,2 @@
-# scope-sensor-server
+# Fernrohr Sensorserver
+Serial to WebSocket
