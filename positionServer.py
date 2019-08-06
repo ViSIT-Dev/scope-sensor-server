@@ -12,15 +12,16 @@ clear = lambda: os.system('cls')
 pivot_value = 0
 tilt_value  = 0
 running = True
+pull_rate_sleep_time = 0.0166666666666666666
 
 def readSerial():
-    global pivot_value, tilt_value, running
+    global pivot_value, tilt_value, running, pull_rate_sleep_time
     while running:
         pivot.write(b'?')
         tilt.write(b'?')
-        time.sleep(0.01)
-        pivot_value = str(pivot.readline())[3:-3]
-        tilt_value = str(tilt.readline())[3:-3]
+        time.sleep(pull_rate_sleep_time)
+        pivot_value = str(pivot.readline())[2:-3]
+        tilt_value = str(tilt.readline())[2:-3]
 
 def printSerial():
     global pivot_value, tilt_value, running
@@ -38,12 +39,12 @@ x.start()
 
 
 async def emitSerialDataToWebSocket(websocket, path):
-    global pivot_value, tilt_value, running
+    global pivot_value, tilt_value, running, pull_rate_sleep_time
     print("Client Connected")
     try:
         while running:
-            await websocket.send('{pivot: ' + str(pivot_value) + ", tilt: " + str(tilt_value) + "}")
-            await asyncio.sleep(0.1)
+            await websocket.send('{{"pivot":{},"tilt":{}}}'.format(pivot_value, tilt_value))
+            await asyncio.sleep(pull_rate_sleep_time)
     except:
         print("Client Disconnected")
 
