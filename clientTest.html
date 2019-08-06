@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>WS Test</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />	
+		<script type="text/javascript" charset="utf-8">
+			let socket = new WebSocket("ws://localhost:8765");
+			
+			socket.onopen = function(e){
+				console.log("opened Connection");
+			}
+			
+			socket.onmessage = function(e){
+				let res = JSON.parse(e.data);
+				console.log("data received:", res);
+				if(res){
+					document.getElementById("tilt").innerHTML = res.tilt;
+					document.getElementById("pivot").innerHTML = res.pivot;
+				}
+				
+			}
+		</script>
+	</head>
+	<body>
+		<h1>Tilt: <span id="tilt"></span>, Pivot: <span id="pivot"></span></h1>
+	</body>
+</html>
