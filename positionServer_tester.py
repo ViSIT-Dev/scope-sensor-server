@@ -13,6 +13,15 @@ tilt_value  = 0
 running = True
 pull_rate_sleep_time = 1 / 55
 
+
+encoderOffsetX = 37000
+encoderOffsetY = 44000
+
+encoderMaxX = encoderOffsetX + 20000
+encoderMaxY = encoderOffsetY + 10000
+
+overflowValue = 65535
+
 def setPivotvalue(val):
     global pivot_value
     pivot_value = val
@@ -37,9 +46,9 @@ class GUI(threading.Thread):
 
         label = Label(self.root, text="PositionServerTester")
         label.pack()
-        x = Scale(self.root, from_=0, to=65000, command=setPivotvalue)
+        x = Scale(self.root, from_=encoderOffsetX, to=encoderMaxX, command=setPivotvalue)
         x.pack()
-        y = Scale(self.root, from_=0, to=65000, orient='horizontal', command=setTiltvalue)
+        y = Scale(self.root, from_=encoderOffsetY, to=encoderMaxY, orient='horizontal', command=setTiltvalue)
         y.pack()
 
         self.root.mainloop()
@@ -51,7 +60,7 @@ async def runGui(root, interval=0.01):
         await asyncio.sleep(interval)
 
 async def emitSerialDataToWebSocket(websocket, path):
-    global pivot_value, tilt_value, running, pull_rate_sleep_time
+    global pivot_value, tilt_value, running, pull_rate_sleep_time, overflowValue
     print("Client Connected")
     try:
         old_pivot = -1
@@ -60,7 +69,7 @@ async def emitSerialDataToWebSocket(websocket, path):
             if old_pivot != pivot_value or old_tilt != tilt_value:
                 old_pivot = pivot_value
                 old_tilt = tilt_value
-                await websocket.send('{{"pivot":{},"tilt":{}}}'.format(old_pivot, old_tilt))
+                await websocket.send('{{"pivot":{},"tilt":{}}}'.format((old_pivot % overflowValue), (old_tilt % overflowValue)))
             await asyncio.sleep(pull_rate_sleep_time)
     except:
         print("Client Disconnected")
