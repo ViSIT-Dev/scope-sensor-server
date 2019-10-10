@@ -24,11 +24,11 @@ overflowValue = 65535
 
 def setPivotvalue(val):
     global pivot_value
-    pivot_value = val
+    pivot_value = int(val)
     
 def setTiltvalue(val):
     global tilt_value
-    tilt_value = val
+    tilt_value = int(val)
 
 
 class GUI(threading.Thread):
@@ -54,7 +54,7 @@ class GUI(threading.Thread):
         self.root.mainloop()
 
 
-async def runGui(root, interval=0.01):
+async def runGui(root, interval=0.02):
     while True:
         root.update()
         await asyncio.sleep(interval)
@@ -67,11 +67,11 @@ async def emitSerialDataToWebSocket(websocket, path):
         old_tilt = -1
         while running:
             if old_pivot != pivot_value or old_tilt != tilt_value:
-                old_pivot = pivot_value
-                old_tilt = tilt_value
-                await websocket.send('{{"pivot":{},"tilt":{}}}'.format((old_pivot % overflowValue), (old_tilt % overflowValue)))
+                old_pivot = pivot_value % overflowValue
+                old_tilt = tilt_value % overflowValue
+                await websocket.send('{{"pivot":{},"tilt":{}}}'.format(old_pivot, old_tilt))
             await asyncio.sleep(pull_rate_sleep_time)
-    except:
+    except (RuntimeError, TypeError, NameError):
         print("Client Disconnected")
 
 start_server = websockets.serve(emitSerialDataToWebSocket, "0.0.0.0", 8765)
